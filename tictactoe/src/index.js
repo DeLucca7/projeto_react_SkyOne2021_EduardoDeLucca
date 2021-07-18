@@ -47,12 +47,13 @@ class Board extends React.Component {
                 history: [{
                   squares: Array(9).fill(null),
                 }],
+                stepNumber: 0,
                 xIsNext: true,
             };
         }
 
         handleClick(i) {
-            const history = this.state.history;
+            const history = this.state.history.slice(0, this.state.stepNumber + 1);
             const current = history[history.length - 1];
             const squares = current.squares.slice();
             if (calculateWinner(squares) || squares[i]) {
@@ -63,41 +64,21 @@ class Board extends React.Component {
               history: history.concat([{
                 squares: squares,
               }]),
+              stepNumber: history.length,
               xIsNext: !this.state.xIsNext,   
             });
         }
 
-        history = [
-            // Antes da primeira jogada
-            {
-              squares: [
-                null, null, null,
-                null, null, null,
-                null, null, null,
-              ]
-            },
-            // Depois da primeira jogada
-            {
-              squares: [
-                null, null, null,
-                null, 'X', null,
-                null, null, null,
-              ]
-            },
-            // Depois da segunda jogada
-            {
-              squares: [
-                null, null, null,
-                null, 'X', null,
-                null, null, 'O',
-              ]
-            },
-            // ...
-        ]
+        jumpTo(step) {
+            this.setState({
+                stepNumber: step,
+                xIsNext: (step % 2) === 0,
+            });
+        }
 
         render() {
             const history = this.state.history;
-            const current = history[history.length - 1];
+            const current = history[this.state.stepNumber];
             const winner = calculateWinner(current.squares);
             let status;
             if (winner) {
@@ -106,16 +87,16 @@ class Board extends React.Component {
               status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
             }
 
-        const moves = history.map((step, move) => {
-          const desc = move ?
-            'Go to move #' + move :
-            'Go to game start';
-          return (
-              <li>
+            const moves = history.map((step, move) => {
+              const desc = move ?
+                'Go to move #' + move :
+                'Go to game start';
+              return (
+                <li key={move}>
                   <button onClick={() => this.jumpTo(move)}>{desc}</button>
-              </li>
-          );
-        });
+                </li>
+              );
+            });
 
             return (
                 <div className="game">
